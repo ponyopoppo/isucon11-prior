@@ -39,7 +39,7 @@ func init() {
 	agent.DefaultTLSConfig.ClientCAs = certs
 	agent.DefaultTLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	agent.DefaultTLSConfig.MinVersion = tls.VersionTLS12
-	agent.DefaultTLSConfig.InsecureSkipVerify = false
+	agent.DefaultTLSConfig.InsecureSkipVerify = true
 
 	isAdmin := false
 	flag.StringVar(&targetHost, "target", os.Getenv("BENCHMARKER_TARGET_HOST"), "ex: 127.0.0.1:9292")
