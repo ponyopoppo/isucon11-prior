@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "ES2018",
+        "allowJs": true,
+        "noEmit": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node"
+    }
+}
