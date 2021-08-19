@@ -2,7 +2,6 @@ import createFastify, { FastifyReply, FastifyRequest } from 'fastify';
 import fastifyCookie from 'fastify-cookie';
 import fastifyFormbody from 'fastify-formbody';
 import fastifyMysql from 'fastify-mysql';
-import fastifyMultipart from 'fastify-multipart';
 import path from 'path';
 import fs from 'fs';
 import { ulid } from 'ulid';
@@ -194,15 +193,6 @@ async function generateID(conn: MySQLClient, table: string) {
     return id;
 }
 
-async function parseMultipart(request: FastifyRequest) {
-    const parts = request.parts();
-    let body: any = {};
-    for await (const part of parts) {
-        body[part.fieldname] = (part as any).value;
-    }
-    return body;
-}
-
 const fastify = createFastify({ logger: true });
 
 fastify.register(fastifyCookie, {
@@ -217,7 +207,6 @@ fastify.register(fastifyMysql, {
     promise: true,
 });
 fastify.register(fastifyFormbody);
-fastify.register(fastifyMultipart);
 
 fastify.post('/initialize', async function initializeHandler(request, reply) {
     const conn = await fastify.mysql.getConnection();
@@ -251,7 +240,7 @@ fastify.post('/api/signup', async function signupHandler(request, reply) {
     const conn = await fastify.mysql.getConnection();
     try {
         await conn.beginTransaction();
-        const { email, nickname } = await parseMultipart(request);
+        const { email, nickname } = request.body as any;
         const id = await generateID(conn, 'users');
         await conn.query(
             'INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, NOW(6))',
@@ -279,7 +268,7 @@ fastify.post('/api/signup', async function signupHandler(request, reply) {
 });
 
 fastify.post('/api/login', async function loginHandler(request, reply) {
-    const { email } = await parseMultipart(request);
+    const { email } = request.body as any;
     const conn = await fastify.mysql.getConnection();
     try {
         const [[user]] = await conn.query(
@@ -309,9 +298,7 @@ fastify.post(
         try {
             await conn.beginTransaction();
             let id = await generateID(conn, 'schedules');
-            let { title, capacity: capacityStr } = await parseMultipart(
-                request
-            );
+            let { title, capacity: capacityStr } = request.body as any;
             const capacity = parseInt(capacityStr);
 
             await conn.query(
@@ -349,7 +336,7 @@ fastify.post(
         try {
             await conn.beginTransaction();
             const id = await generateID(conn, 'reservations');
-            const { scheduleId } = await parseMultipart(request);
+            const { scheduleId } = request.body as any;
             const userId = (await getCurrentUser(request)).id;
             let rows: any[] = [];
             [rows] = await conn.query(
