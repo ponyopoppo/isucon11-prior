@@ -344,6 +344,7 @@ fastify.post(
                 [scheduleId]
             );
             if (rows.length !== 1) {
+                await conn.rollback();
                 return sendErrorJSON(
                     reply,
                     new Error('schedule not found'),
@@ -375,6 +376,7 @@ fastify.post(
             }
 
             if (reserved >= capacity) {
+                await conn.rollback();
                 return sendErrorJSON(
                     reply,
                     new Error('capacity is already full'),
